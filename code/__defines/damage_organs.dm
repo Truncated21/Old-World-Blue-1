@@ -35,15 +35,17 @@
 #define ORGAN_SPLINTED   (1<<4)
 #define ORGAN_DEAD       (1<<5)
 #define ORGAN_MUTATED    (1<<6)
-#define SALVED           (1<<7)
-#define ORGAN_GAUZED     (1<<8)
-#define ORGAN_ATTACHABLE (1<<9)
-#define ORGAN_ROBOT      (1<<10)
-#define ORGAN_ASSISTED   (1<<11)
 
 #define DROPLIMB_EDGE 0
 #define DROPLIMB_BLUNT 1
 #define DROPLIMB_BURN 2
+
+// Damage above this value must be repaired with surgery.
+#define ROBOLIMB_REPAIR_CAP 30
+
+#define ORGAN_ASSISTED 1 // Like pacemakers, not robotic
+#define ORGAN_ROBOT    2 // Fully robotic, no organic parts
+#define ORGAN_LIFELIKE 3 // Robotic, made to appear organic
 
 //Germs and infections.
 #define GERM_LEVEL_AMBIENT  110 // Maximum germ level you can reach by standing still.

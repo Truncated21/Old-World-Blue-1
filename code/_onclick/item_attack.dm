@@ -6,15 +6,18 @@
 // No comment
 /atom/proc/attackby(obj/item/W, mob/user)
 	return
+
 /atom/movable/attackby(obj/item/W, mob/user)
 	if(!W.flags & NOBLUDGEON)
 		visible_message("<span class='danger'>[src] has been hit by [user] with [W].</span>")
 
 /mob/living/attackby(obj/item/I, mob/user)
-	if(istype(I) && ismob(user))
-		user.next_move = world.time + 8
-		I.attack(src, user)
-
+	if(!ismob(user))
+		return 0
+	user.next_move = world.time + 8
+	if(can_operate(src) && I.do_surgery(src,user)) //Surgery
+		return 1
+	return I.attack(src, user, user.zone_sel.selecting)
 
 // Proximity_flag is 1 if this afterattack was called on something adjacent, in your square, or on your person.
 // Click parameters is the params string from byond Click() code, see that documentation.

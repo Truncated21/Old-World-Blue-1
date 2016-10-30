@@ -196,9 +196,7 @@ var/global/list/damage_icon_parts = list()
 	for(var/obj/item/organ/external/O in organs)
 		if(O.is_stump())
 			continue
-		if(O.status & ORGAN_DESTROYED) damage_appearance += "d"
-		else
-			damage_appearance += O.damage_state
+		damage_appearance += O.damage_state
 
 	if(damage_appearance == previous_damage_appearance)
 		// nothing to do here
@@ -214,22 +212,22 @@ var/global/list/damage_icon_parts = list()
 	for(var/obj/item/organ/external/O in organs)
 		if(O.is_stump())
 			continue
-		if(!(O.status & ORGAN_DESTROYED))
-			O.update_icon()
-			if(O.damage_state == "00") continue
-			var/icon/DI
-			var/cache_index = "[O.damage_state]/[O.organ_tag][body_build.index]/[get_blood_colour()]/[species.get_bodytype()]"
-			if(damage_icon_parts[cache_index] == null)
-				// the damage icon for whole human
-				DI = new /icon(species.damage_overlays, O.damage_state)
-				// mask with this organ's pixels
-				DI.Blend(new /icon(species.damage_mask, "[O.organ_tag][body_build.index]"), ICON_MULTIPLY)
-				DI.Blend(get_blood_colour(), ICON_MULTIPLY)
-				damage_icon_parts[cache_index] = DI
-			else
-				DI = damage_icon_parts[cache_index]
 
-			standing_image.overlays += DI
+		O.update_icon()
+		if(O.damage_state == "00") continue
+		var/icon/DI
+		var/cache_index = "[O.damage_state]/[O.organ_tag][body_build.index]/[get_blood_colour()]/[species.get_bodytype()]"
+		if(damage_icon_parts[cache_index] == null)
+			// the damage icon for whole human
+			DI = new /icon(species.damage_overlays, O.damage_state)
+			// mask with this organ's pixels
+			DI.Blend(new /icon(species.damage_mask, "[O.organ_tag][body_build.index]"), ICON_MULTIPLY)
+			DI.Blend(get_blood_colour(), ICON_MULTIPLY)
+			damage_icon_parts[cache_index] = DI
+		else
+			DI = damage_icon_parts[cache_index]
+
+		standing_image.overlays += DI
 
 	overlays_standing[DAMAGE_LAYER]	= standing_image
 
@@ -246,8 +244,7 @@ var/global/list/damage_icon_parts = list()
 	var/hulk = (HULK in src.mutations)
 	var/skeleton = (SKELETON in src.mutations)
 
-	var/g = (gender == FEMALE ? "f" : "m")
-	g += body_build.index
+	robolimb_count = 0
 
 	//CACHING: Generate an index key from visible bodyparts.
 	//0 = destroyed, 1 = normal, 2 = robotic, 3 = mutated, 4 = necrotic.
@@ -257,7 +254,11 @@ var/global/list/damage_icon_parts = list()
 		qdel(stand_icon)
 	stand_icon = new(species.icon_template ? species.icon_template : 'icons/mob/human.dmi',"blank")
 
-	var/icon_key = "[species.race_key][g][species.flags & HAS_SKIN_TONE ? s_tone : ""] \
+	var/g = "male"
+	if(gender == FEMALE)
+		g = "female"
+
+	var/icon_key = "[species.race_key][g][body_build.index][species.flags & HAS_SKIN_TONE ? s_tone : ""] \
 					[species.flags & HAS_SKIN_COLOR ? skin_color : ""]"
 	if(lip_color)
 		icon_key += lip_color
@@ -271,16 +272,11 @@ var/global/list/damage_icon_parts = list()
 
 	for(var/organ_tag in species.has_limbs)
 		var/obj/item/organ/external/part = organs_by_name[organ_tag]
-		if(isnull(part) || part.is_stump() || (part.status & ORGAN_DESTROYED))
+		if(isnull(part))
 			icon_key += "0"
-		else if(part.status & ORGAN_ROBOT)
-			icon_key += "2[part.model ? "-[part.model]": ""]"
-		else if(part.status & ORGAN_MUTATED)
-			icon_key += "3"
-		else if(part.status & ORGAN_DEAD)
-			icon_key += "4"
 		else
-			icon_key += "1[part.tattoo][part.tattoo2]"
+			icon_key += part.get_icon_key()
+			if(part.robotic >= ORGAN_ROBOT) robolimb_count++
 
 	icon_key = "[icon_key][husk ? 1 : 0][fat ? 1 : 0][hulk ? 1 : 0][skeleton ? 1 : 0]"
 

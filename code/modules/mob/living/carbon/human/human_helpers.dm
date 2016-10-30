@@ -36,7 +36,6 @@
 	return 0
 
 /mob/living/carbon/human/proc/should_have_organ(var/organ_check)
-
 	var/obj/item/organ/external/affecting
 	if(organ_check in list(O_HEART, O_LUNGS))
 		affecting = organs_by_name[BP_CHEST]
@@ -47,7 +46,7 @@
 		return 0
 	return (species && species.has_organ[organ_check])
 
-/mob/living/carbon/human/proc/can_feel_pain(var/check_organ)
+/mob/living/carbon/human/can_feel_pain(var/check_organ)
 	if(isSynthetic())
 		return 0
 	return !(species.flags & NO_PAIN)

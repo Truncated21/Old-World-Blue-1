@@ -18,11 +18,8 @@
 	if(outdated)
 		outdated.removed()
 	H.internal_organs_by_name[organ_tag] = src
-	var/obj/item/organ/external/E = H.organs_by_name[src.parent_organ]
-	if(E)
-		E.internal_organs |= src
-	if(robotic)
-		status |= ORGAN_ROBOT
+	if(parent)
+		parent.internal_organs |= src
 
 /obj/item/organ/internal/Destroy()
 	if(owner)
@@ -33,22 +30,16 @@
 		parent = null
 	return ..()
 
-/obj/item/organ/internal/removed(mob/living/user)
-	if(!istype(owner)) return
+/obj/item/organ/internal/removed(var/mob/living/user)
+	if(owner)
+		owner.internal_organs -= src
+		owner.internal_organs_by_name[organ_tag] = null
+	if(parent)
+		parent.internal_organs -= src
+		parent = null
+	..()
 
-	owner.internal_organs_by_name[organ_tag] = null
-	owner.internal_organs -= src
 
-	var/datum/reagent/blood/transplant_blood = locate(/datum/reagent/blood) in reagents.reagent_list
-	transplant_data = list()
-	if(!transplant_blood)
-		transplant_data["species"] =    owner.species.name
-		transplant_data["blood_type"] = owner.dna.b_type
-		transplant_data["blood_DNA"] =  owner.dna.unique_enzymes
-	else
-		transplant_data["species"] =    transplant_blood.data["species"]
-		transplant_data["blood_type"] = transplant_blood.data["blood_type"]
-		transplant_data["blood_DNA"] =  transplant_blood.data["blood_DNA"]
 
 	..()
 
@@ -123,6 +114,35 @@
 	var/eye_colour = ""
 	var/icon/mob_icon = null
 
+/obj/item/organ/internal/eyes/robotize()
+	..()
+	name = "optical sensor"
+	icon = 'icons/obj/robot_component.dmi'
+	icon_state = "camera"
+	dead_icon = "camera_broken"
+	verbs |= /obj/item/organ/internal/eyes/proc/change_eye_color
+
+/obj/item/organ/internal/eyes/robot
+	name = "optical sensor"
+
+/obj/item/organ/internal/eyes/robot/New()
+	..()
+	robotize()
+
+/obj/item/organ/internal/eyes/proc/change_eye_color()
+	set name = "Change Eye Color"
+	set desc = "Changes your robotic eye color instantly."
+	set category = "IC"
+	set src in usr
+
+	var/new_color = input("Pick a new color for your eyes.","Eye Color", eye_colour) as null|color
+	if(new_color && owner)
+		owner.eyes_color = new_color
+		// Now sync the organ's eye_colour.
+		update_colour()
+		// Finally, update the eye icon on the mob.
+		owner.update_eyes()
+
 /obj/item/organ/internal/eyes/install(mob/living/carbon/human/H)
 	if(..()) return 1
 	// Apply our eye colour to the target.
@@ -133,7 +153,7 @@
 	owner.update_eyes()
 
 /obj/item/organ/internal/eyes/proc/get_icon()
-	mob_icon = new/icon(owner.species.icobase, "eyes[owner.body_build.index]")
+	mob_icon = new/icon(species.icobase, "eyes[owner.body_build.index]")
 	mob_icon.Blend(eye_colour, ICON_ADD)
 	return mob_icon
 
@@ -247,7 +267,7 @@
 
 	if (germ_level > INFECTION_LEVEL_ONE)
 		if(prob(1))
-			owner << "\red Your skin itches."
+			owner << "<span class='danger'>Your skin itches.</span>"
 	if (germ_level > INFECTION_LEVEL_TWO)
 		if(prob(1))
 			spawn owner.vomit()
@@ -292,15 +312,51 @@
 	icon_state = "appendix"
 	parent_organ = BP_GROIN
 	organ_tag = O_APPENDIX
+	var/inflamed = 0
+	var/inflame_progress = 0
+
+/mob/living/carbon/human/proc/appendicitis()
+	if(stat == DEAD)
+		return 0
+	var/obj/item/organ/internal/appendix/A = internal_organs_by_name[O_APPENDIX]
+	if(istype(A) && !A.inflamed)
+		A.inflamed = 1
+		return 1
+	return 0
+
+/obj/item/organ/internal/appendix/process()
+	if(!inflamed || !owner)
+		return
+
+	if(++inflame_progress > 200)
+		++inflamed
+		inflame_progress = 0
+
+	if(inflamed == 1)
+		if(prob(5))
+			owner << "<span class='warning'>You feel a stinging pain in your abdomen!</span>"
+			owner.emote("me", 1, "winces slightly.")
+	if(inflamed > 1)
+		if(prob(3))
+			owner << "<span class='warning'>You feel a stabbing pain in your abdomen!</span>"
+			owner.emote("me", 1, "winces painfully.")
+			owner.adjustToxLoss(1)
+	if(inflamed > 2)
+		if(prob(1))
+			owner.vomit()
+	if(inflamed > 3)
+		if(prob(1))
+			owner << "<span class='danger'>Your abdomen is a world of pain!</span>"
+			owner.Weaken(10)
+
+			var/obj/item/organ/external/groin = owner.get_organ(BP_GROIN)
+			var/datum/wound/W = new /datum/wound/internal_bleeding(20)
+			owner.adjustToxLoss(25)
+			groin.wounds += W
+			inflamed = 0
 
 /obj/item/organ/internal/appendix/removed()
-	if(owner)
-		var/inflamed = 0
-		for(var/datum/disease/appendicitis/appendicitis in owner.viruses)
-			inflamed = 1
-			appendicitis.cure()
-			owner.resistances += appendicitis
-		if(inflamed)
-			icon_state = "appendixinflamed"
-			name = "inflamed appendix"
+	if(inflamed)
+		icon_state = "appendixinflamed"
+		name = "inflamed appendix"
 	..()

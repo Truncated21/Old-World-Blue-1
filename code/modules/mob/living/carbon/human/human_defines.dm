@@ -72,6 +72,7 @@
 
 	var/list/flavor_texts = list()
 	var/gunshot_residue
+	var/robolimb_count = 0 // Number of robot limbs.
 
 	mob_bump_flag = HUMAN
 	mob_push_flags = ~HEAVY

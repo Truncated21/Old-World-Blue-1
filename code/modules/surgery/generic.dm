@@ -15,11 +15,9 @@
 		var/obj/item/organ/external/affected = target.get_organ(target_zone)
 		if (affected == null)
 			return 0
-		if (affected.status & ORGAN_DESTROYED)
+		if (affected.is_stump())
 			return 0
-		if (target_zone == BP_HEAD && target.species && (target.species.flags & IS_SYNTHETIC))
-			return 1
-		if (affected.status & ORGAN_ROBOT)
+		if (affected.robotic >= ORGAN_ROBOT)
 			return 0
 		return 1
 
@@ -52,9 +50,6 @@
 		"\blue You have made a bloodless incision on [target]'s [affected.name] with \the [tool].",)
 		//Could be cleaner ...
 		affected.open = 1
-
-		if(istype(target) && !(target.species.flags & NO_BLOOD))
-			affected.status |= ORGAN_BLEEDING
 
 		affected.createwound(CUT, 1)
 		affected.clamp()
@@ -95,7 +90,8 @@
 		var/obj/item/organ/external/affected = target.get_organ(target_zone)
 		user.visible_message(
 			"\blue [user] has constructed a prepared incision on and within [target]'s [affected.name] with \the [tool].",\
-			"\blue You have constructed a prepared incision on and within [target]'s [affected.name] with \the [tool].",)
+			"\blue You have constructed a prepared incision on and within [target]'s [affected.name] with \the [tool]."
+		)
 		affected.open = 1
 
 		if(istype(target) && target.should_have_organ(O_HEART))
@@ -167,10 +163,7 @@
 	can_use(mob/living/user, mob/living/carbon/human/target, target_zone, obj/item/tool)
 		if(..())
 			var/obj/item/organ/external/affected = target.get_organ(target_zone)
-			if(affected && affected.open && (affected.status & ORGAN_BLEEDING))
-				return 1
-			else
-				return 0
+			return affected && affected.open && (affected.status & ORGAN_BLEEDING)
 
 	begin_step(mob/user, mob/living/carbon/human/target, target_zone, obj/item/tool)
 		var/obj/item/organ/external/affected = target.get_organ(target_zone)
@@ -303,8 +296,6 @@
 			return 0
 		var/obj/item/organ/external/affected = target.get_organ(target_zone)
 		if (affected == null)
-			return 0
-		if (affected.status & ORGAN_DESTROYED)
 			return 0
 		return !affected.cannot_amputate
 
