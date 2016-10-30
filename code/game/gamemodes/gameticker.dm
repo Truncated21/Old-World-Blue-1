@@ -40,9 +40,10 @@ var/list/donator_icons
 
 /datum/controller/gameticker/proc/pregame()
 	login_music = pick(
-		/*'sound/music/halloween/skeletons.ogg',
+		'sound/music/halloween/skeletons.ogg',
 		'sound/music/halloween/halloween.ogg',
-		'sound/music/halloween/ghosts.ogg',*/
+		'sound/music/halloween/halloween1.ogg')
+		/*'sound/music/halloween/ghosts.ogg',
 		'sound/music/space.ogg',
 		'sound/music/traitor.ogg',
 		'sound/music/title2.ogg',
@@ -53,7 +54,7 @@ var/list/donator_icons
 		'sound/music/undertale.ogg',
 		'sound/music/space_oddity.ogg',
 		'sound/music/Welcome_to_Lunar_Industries.ogg',
-		'sound/music/Mind_Heist.ogg')
+		'sound/music/Mind_Heist.ogg')*/
 
 	donator_icons = icon_states('icons/donator.dmi')
 

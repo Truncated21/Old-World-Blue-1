@@ -1084,7 +1084,7 @@ var/global/list/special_roles = list( //keep synced with the defines BE_* in set
 								continue
 							if(gender == FEMALE && S.gender == MALE)
 								continue
-							if( !(species in S.species_allowed))
+							if(!current_species.get_bodytype() in S.species_allowed)
 								continue
 							valid_hairstyles[hairstyle] = hair_styles_list[hairstyle]
 
@@ -1102,7 +1102,7 @@ var/global/list/special_roles = list( //keep synced with the defines BE_* in set
 								continue
 							if(gender == FEMALE && S.gender == MALE)
 								continue
-							if( !(species in S.species_allowed))
+							if(!current_species.get_bodytype() in S.species_allowed)
 								continue
 
 							valid_facialhairstyles[facialhairstyle] = facial_hair_styles_list[facialhairstyle]
@@ -1152,7 +1152,7 @@ var/global/list/special_roles = list( //keep synced with the defines BE_* in set
 					var/list/valid_hairstyles = list()
 					for(var/hairstyle in hair_styles_list)
 						var/datum/sprite_accessory/S = hair_styles_list[hairstyle]
-						if( !(species in S.species_allowed))
+						if(!current_species.get_bodytype() in S.species_allowed)
 							continue
 
 						valid_hairstyles[hairstyle] = hair_styles_list[hairstyle]
@@ -1174,7 +1174,7 @@ var/global/list/special_roles = list( //keep synced with the defines BE_* in set
 							continue
 						if(gender == FEMALE && S.gender == MALE)
 							continue
-						if( !(species in S.species_allowed))
+						if(!current_species.get_bodytype() in S.species_allowed)
 							continue
 
 						valid_facialhairstyles[facialhairstyle] = facial_hair_styles_list[facialhairstyle]
