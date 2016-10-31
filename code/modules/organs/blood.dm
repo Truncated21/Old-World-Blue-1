@@ -168,12 +168,13 @@ var/const/BLOOD_VOLUME_SURVIVE = 40
 	B.data["virus2"] |= virus_copylist(src.virus2)
 	B.data["antibodies"] = src.antibodies
 	B.data["blood_DNA"] = copytext(src.dna.unique_enzymes,1,0)
-	if(src.resistances && src.resistances.len)
-		if(B.data["resistances"])
-			B.data["resistances"] |= src.resistances.Copy()
-		else
-			B.data["resistances"] = src.resistances.Copy()
 	B.data["blood_type"] = copytext(src.dna.b_type,1,0)
+
+	// Putting this here due to return shenanigans.
+	if(istype(src,/mob/living/carbon/human))
+		var/mob/living/carbon/human/H = src
+		B.data["blood_colour"] = H.species.blood_color
+		B.color = B.data["blood_colour"]
 
 	var/list/temp_chem = list()
 	for(var/datum/reagent/R in src.reagents.reagent_list)
@@ -191,13 +192,8 @@ var/const/BLOOD_VOLUME_SURVIVE = 40
 	if(vessel.get_reagent_amount("blood") < amount)
 		return null
 
-	var/datum/reagent/B = ..()
-
-	B.data["blood_colour"] = get_blood_colour()
-	B.color = B.data["blood_colour"]
-
+	. = ..()
 	vessel.remove_reagent("blood",amount) // Removes blood if human
-	return B
 
 //Transfers blood from container ot vessels
 /mob/living/carbon/proc/inject_blood(var/datum/reagent/blood/injected, var/amount)

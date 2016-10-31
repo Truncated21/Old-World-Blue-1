@@ -104,7 +104,7 @@
 
 	var/blood_state
 
-	while(G && (G.state < GRAB_NECK) && E && (E.status & ORGAN_BLEEDING))
+	while((G in list(l_hand, r_hand)) && (G.state >= GRAB_NECK) && E && (E.status & ORGAN_BLEEDING))
 		switch(H.vessel.get_reagent_amount("blood")/H.species.blood_volume)
 			if(BLOOD_VOLUME_SAFE/100 to 1)
 				if(!blood_state)
@@ -125,12 +125,11 @@
 			else
 				src << "<span class='dangerous'>[H] don't have anough blood for feed us.</span>"
 				break
-		var/datum/reagents/R = H.take_blood(H.vessel, 10)
-		R.trans_to_mob(src, R.total_volume, CHEM_INGEST)
-		sleep(20)
+		H.vessel.trans_to_mob(src, 10, CHEM_INGEST)
+		sleep(40)
 
 	src.visible_message(
-		"<span class='warning'>[src] released [H].</span>",
+		"<span class='warning'>[src] released [H] [body_part].</span>",
 		"<span class='notice'>We stop dringing [H] blood.</span>"
 	)
 	if(G)
